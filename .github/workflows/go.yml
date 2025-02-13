@@ -26,6 +26,8 @@ jobs:
                     --health-retries 5
         steps:
             - uses: actions/checkout@v4
+            - name: Install go migrate
+              run: go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
             - name: Run migrations
               run: make migrateup
             - name: Set up Go
