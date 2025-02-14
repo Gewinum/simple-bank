@@ -2,18 +2,18 @@ package db
 
 import (
 	"context"
-	"fmt"
 	"github.com/stretchr/testify/require"
+	"simple-bank/random"
 	"testing"
 	"time"
 )
 
 func createRandomUser(t *testing.T) User {
 	arg := CreateUserParams{
-		Username:       randomOwner(),
+		Username:       random.Username(),
 		HashedPassword: "secret",
-		FullName:       randomOwner(),
-		Email:          randomEmail(),
+		FullName:       random.Username(),
+		Email:          random.UserEmail(),
 	}
 
 	user, err := testQueries.CreateUser(context.Background(), arg)
@@ -51,8 +51,4 @@ func TestQueries_GetUser(t *testing.T) {
 	require.Equal(t, randomUser.Email, account.Email)
 	require.WithinDuration(t, randomUser.PasswordChangedAt, account.PasswordChangedAt, time.Second)
 	require.WithinDuration(t, randomUser.CreatedAt, account.CreatedAt, time.Second)
-}
-
-func randomEmail() string {
-	return fmt.Sprintf("%s@email.com", randomOwner())
 }

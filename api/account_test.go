@@ -8,13 +8,12 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 	"io"
-	"math/rand"
 	"net/http"
 	"net/http/httptest"
 	"simple-bank/internal/db"
 	mockdb "simple-bank/internal/db/mock"
+	"simple-bank/random"
 	"testing"
-	"time"
 )
 
 func TestServer_GetAccountAPI(t *testing.T) {
@@ -115,40 +114,9 @@ func requireBodyMatchAccount(t *testing.T, body *bytes.Buffer, account db.Accoun
 
 func randomAccount() db.Account {
 	return db.Account{
-		ID:       int64(randomInt(1, 1000)),
-		Owner:    randomOwner(),
-		Balance:  randomMoney(),
-		Currency: randomCurrency(),
+		ID:       random.Int64(1, 1000),
+		Owner:    random.Username(),
+		Balance:  random.AccountBalance(),
+		Currency: random.AccountCurrency(),
 	}
-}
-
-func getRand() *rand.Rand {
-	return rand.New(rand.NewSource(time.Now().UnixMicro()))
-}
-
-func randomInt(min, max int) int {
-	return min + getRand().Intn(max-min)
-}
-
-func randomString(n int) string {
-	var letter = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-	b := make([]rune, n)
-	for i := range b {
-		b[i] = letter[getRand().Intn(len(letter))]
-	}
-	return string(b)
-}
-
-func randomOwner() string {
-	return randomString(6)
-}
-
-func randomMoney() int64 {
-	return int64(randomInt(0, 1000))
-}
-
-func randomCurrency() string {
-	currencies := []string{"USD", "EUR"}
-	n := randomInt(0, len(currencies)-1)
-	return currencies[n]
 }

@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"github.com/stretchr/testify/require"
-	"math/rand"
+	"simple-bank/random"
 	"testing"
 	"time"
 )
@@ -14,8 +14,8 @@ func createRandomAccount(t *testing.T) Account {
 
 	arg := CreateAccountParams{
 		Owner:    user.Username,
-		Balance:  randomMoney(),
-		Currency: randomCurrency(),
+		Balance:  random.AccountBalance(),
+		Currency: random.AccountCurrency(),
 	}
 
 	account, err := testQueries.CreateAccount(context.Background(), arg)
@@ -78,35 +78,4 @@ func TestQueries_ListAccounts(t *testing.T) {
 	accounts, err := testQueries.ListAccounts(context.Background(), arg)
 	require.NoError(t, err)
 	require.Len(t, accounts, 5)
-}
-
-func getRand() *rand.Rand {
-	return rand.New(rand.NewSource(time.Now().UnixMicro()))
-}
-
-func randomInt(min, max int) int {
-	return min + getRand().Intn(max-min)
-}
-
-func randomString(n int) string {
-	var letter = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-	b := make([]rune, n)
-	for i := range b {
-		b[i] = letter[getRand().Intn(len(letter))]
-	}
-	return string(b)
-}
-
-func randomOwner() string {
-	return randomString(6)
-}
-
-func randomMoney() int64 {
-	return int64(randomInt(0, 1000))
-}
-
-func randomCurrency() string {
-	currencies := []string{"USD", "EUR"}
-	n := randomInt(0, len(currencies)-1)
-	return currencies[n]
 }
