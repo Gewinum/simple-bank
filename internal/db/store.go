@@ -5,13 +5,18 @@ import (
 	"database/sql"
 )
 
-type Store struct {
+type Store interface {
+	TransferTx(ctx context.Context, args TransferTxParams) (TransferTxResult, error)
+	Querier
+}
+
+type SQLStore struct {
 	*Queries
 	db *sql.DB
 }
 
-func NewStore(db *sql.DB) *Store {
-	return &Store{
+func NewStore(db *sql.DB) Store {
+	return &SQLStore{
 		db:      db,
 		Queries: New(db),
 	}
@@ -31,7 +36,7 @@ type TransferTxResult struct {
 	ToEntry     Entry    `json:"to_entry"`
 }
 
-func (s *Store) TransferTx(ctx context.Context, args TransferTxParams) (TransferTxResult, error) {
+func (s *SQLStore) TransferTx(ctx context.Context, args TransferTxParams) (TransferTxResult, error) {
 	var result TransferTxResult
 
 	err := s.execTx(ctx, func(q *Queries) error {
@@ -77,7 +82,7 @@ func (s *Store) TransferTx(ctx context.Context, args TransferTxParams) (Transfer
 	return result, err
 }
 
-func (s *Store) addBalance(
+func (s *SQLStore) addBalance(
 	ctx context.Context,
 	account1Id int64,
 	amount1 int64,
@@ -97,7 +102,7 @@ func (s *Store) addBalance(
 	return
 }
 
-func (s *Store) execTx(ctx context.Context, cb func(q *Queries) error) error {
+func (s *SQLStore) execTx(ctx context.Context, cb func(q *Queries) error) error {
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err

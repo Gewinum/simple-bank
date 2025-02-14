@@ -13,6 +13,7 @@ sql:
               package: "db"
               out: "./internal/db"
               emit_empty_slices: true
+              emit_interface: true
 overrides:
     go: null
 plugins: []
