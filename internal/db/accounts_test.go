@@ -10,8 +10,10 @@ import (
 )
 
 func createRandomAccount(t *testing.T) Account {
+	user := createRandomUser(t)
+
 	arg := CreateAccountParams{
-		Owner:    randomOwner(),
+		Owner:    user.Username,
 		Balance:  randomMoney(),
 		Currency: randomCurrency(),
 	}
