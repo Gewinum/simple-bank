@@ -56,6 +56,8 @@ func (s *Server) createUser(c *gin.Context) {
 			case "unique_violation":
 				c.JSON(http.StatusForbidden, errorResponse(err))
 			}
+		} else {
+			c.JSON(http.StatusInternalServerError, errorResponse(err))
 		}
 		return
 	}
