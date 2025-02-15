@@ -24,10 +24,12 @@ func (s *Server) createTransfer(c *gin.Context) {
 	}
 
 	if !s.validateAccount(c, request.FromAccountID, request.Currency) {
+		c.JSON(http.StatusBadRequest, errorResponse(errors.New("source account's currency does not match transaction's")))
 		return
 	}
 
 	if !s.validateAccount(c, request.ToAccountID, request.Currency) {
+		c.JSON(http.StatusBadRequest, errorResponse(errors.New("destination account's currency does not match transaction's")))
 		return
 	}
 
