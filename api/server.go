@@ -23,6 +23,8 @@ func NewServer(store db.Store) *Server {
 		}
 	}
 
+	server.engine.POST("/users", server.createUser)
+
 	server.engine.POST("/accounts", server.createAccount)
 	server.engine.GET("/accounts/:id", server.getAccount)
 	server.engine.GET("/accounts", server.listAccounts)

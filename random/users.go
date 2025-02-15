@@ -1,6 +1,8 @@
 package random
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func Username() string {
 	return String(6)
