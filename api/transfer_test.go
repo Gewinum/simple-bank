@@ -10,7 +10,6 @@ import (
 	"net/http/httptest"
 	"simple-bank/internal/db"
 	mockdb "simple-bank/internal/db/mock"
-	"simple-bank/random"
 	"simple-bank/utils"
 	"testing"
 	"time"
@@ -56,8 +55,8 @@ func TestServer_createTransfer(t *testing.T) {
 					ToEntry:     db.Entry{ID: 2, AccountID: account2.ID, Amount: 10},
 				}
 
-				account1.Currency = random.AccountCurrency()
-				account2.Currency = account1.Currency
+				account1.Currency = utils.CurrencyUSD
+				account2.Currency = utils.CurrencyUSD
 
 				store.EXPECT().
 					GetAccount(gomock.Any(), gomock.Eq(account1.ID)).
