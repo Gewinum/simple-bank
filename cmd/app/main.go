@@ -8,11 +8,6 @@ import (
 	"simple-bank/internal/db"
 )
 
-const (
-	dbDriver = "postgres"
-	dbSource = "postgresql://root:root@localhost:5432/simplebank?sslmode=disable"
-)
-
 func main() {
 	cfg, err := config.Load("./")
 	if err != nil {
@@ -24,7 +19,10 @@ func main() {
 	}
 
 	store := db.NewStore(sqlConn)
-	server := api.NewServer(store)
+	server, err := api.NewServer(cfg, store)
+	if err != nil {
+		panic(err)
+	}
 	err = server.Start(cfg.ServerAddress)
 	if err != nil {
 		panic(err)

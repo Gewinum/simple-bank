@@ -2,6 +2,7 @@ package api
 
 import (
 	"bytes"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"github.com/lib/pq"
@@ -14,6 +15,7 @@ import (
 	"simple-bank/random"
 	"simple-bank/security"
 	"testing"
+	"time"
 )
 
 func TestServer_createUser(t *testing.T) {
@@ -43,7 +45,7 @@ func TestServer_createUser(t *testing.T) {
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
-				var result createUserResponse
+				var result userResponse
 				require.NoError(t, json.Unmarshal(recorder.Body.Bytes(), &result))
 				require.Equal(t, user.Username, result.Username)
 				require.Equal(t, user.FullName, result.FullName)
@@ -156,7 +158,7 @@ func TestServer_createUser(t *testing.T) {
 
 			store := mockdb.NewMockStore(ctrl)
 			tc.buildStubs(store)
-			server := NewServer(store)
+			server := newTestServer(t, store)
 			recorder := httptest.NewRecorder()
 
 			trReq := tc.createBody()
@@ -171,6 +173,110 @@ func TestServer_createUser(t *testing.T) {
 			server.engine.ServeHTTP(recorder, request)
 
 			tc.checkResponse(t, recorder)
+		})
+	}
+}
+
+func TestServer_loginUser(t *testing.T) {
+	user, password := randomUser(t)
+
+	testCases := []struct {
+		name          string
+		body          loginUserRequest
+		buildStubs    func(store *mockdb.MockStore)
+		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder, server *Server)
+	}{
+		{
+			name: "success",
+			body: loginUserRequest{
+				Username: user.Username,
+				Password: password,
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					GetUser(gomock.Any(), gomock.Eq(user.Username)).
+					Times(1).
+					Return(user, nil)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, server *Server) {
+				require.Equal(t, http.StatusOK, recorder.Code)
+				var result loginUserResponse
+				require.NoError(t, json.Unmarshal(recorder.Body.Bytes(), &result))
+				require.Equal(t, newUserResponse(user), result.User)
+				payload, err := server.tokensManager.VerifyToken(result.AccessToken)
+				require.NoError(t, err)
+				require.Equal(t, user.Username, payload.Subject)
+				require.WithinDuration(t, time.Now(), payload.IssuedAt, time.Second)
+				require.WithinDuration(t, time.Now(), payload.NotBefore, time.Second)
+				require.WithinDuration(t, time.Now().Add(server.config.AccessTokenDuration), payload.ExpiredAt, time.Second)
+			},
+		},
+		{
+			name: "login_not_exists",
+			body: loginUserRequest{
+				Username: user.Username,
+				Password: password,
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					GetUser(gomock.Any(), gomock.Eq(user.Username)).
+					Times(1).
+					Return(db.User{}, sql.ErrNoRows)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, server *Server) {
+				require.Equal(t, http.StatusNotFound, recorder.Code)
+			},
+		},
+		{
+			name: "invalid_password",
+			body: loginUserRequest{
+				Username: user.Username,
+				Password: "invalid",
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					GetUser(gomock.Any(), gomock.Eq(user.Username)).
+					Times(1).
+					Return(user, nil)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, server *Server) {
+				require.Equal(t, http.StatusUnauthorized, recorder.Code)
+			},
+		},
+		{
+			name: "internal_server_error",
+			body: loginUserRequest{
+				Username: user.Username,
+				Password: password,
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					GetUser(gomock.Any(), gomock.Eq(user.Username)).
+					Times(1).
+					Return(db.User{}, errors.New("Internal Server Error"))
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, server *Server) {
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			store := mockdb.NewMockStore(ctrl)
+			tc.buildStubs(store)
+			server := newTestServer(t, store)
+			recorder := httptest.NewRecorder()
+			trReq := tc.body
+			rawBody, err := json.Marshal(trReq)
+			require.NoError(t, err)
+			request, err := http.NewRequest(http.MethodPost, "/users/login", bytes.NewReader(rawBody))
+			require.NoError(t, err)
+			server.engine.ServeHTTP(recorder, request)
+			tc.checkResponse(t, recorder, server)
+
 		})
 	}
 }
