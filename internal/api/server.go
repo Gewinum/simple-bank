@@ -6,18 +6,18 @@ import (
 	"github.com/go-playground/validator/v10"
 	"simple-bank/internal/config"
 	"simple-bank/internal/db"
-	"simple-bank/tokens"
+	tokens2 "simple-bank/internal/tokens"
 )
 
 type Server struct {
 	config        *config.Config
 	store         db.Store
 	engine        *gin.Engine
-	tokensManager tokens.Manager
+	tokensManager tokens2.Manager
 }
 
 func NewServer(config *config.Config, store db.Store) (*Server, error) {
-	tokensManager, err := tokens.NewPasetoManager(config.TokenPrivateKey)
+	tokensManager, err := tokens2.NewPasetoManager(config.TokenPrivateKey)
 	if err != nil {
 		return nil, err
 	}

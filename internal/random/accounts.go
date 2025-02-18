@@ -1,7 +1,7 @@
 package random
 
 import (
-	"simple-bank/utils"
+	"simple-bank/internal/utils"
 )
 
 func AccountBalance() int64 {

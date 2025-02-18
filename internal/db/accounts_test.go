@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"github.com/stretchr/testify/require"
-	"simple-bank/random"
+	"simple-bank/internal/random"
 	"testing"
 	"time"
 )

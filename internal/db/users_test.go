@@ -3,21 +3,21 @@ package db
 import (
 	"context"
 	"github.com/stretchr/testify/require"
-	"simple-bank/random"
-	"simple-bank/security"
+	random2 "simple-bank/internal/random"
+	"simple-bank/internal/security"
 	"testing"
 	"time"
 )
 
 func createRandomUser(t *testing.T) User {
-	hashedPassword, err := security.HashPassword(random.String(6))
+	hashedPassword, err := security.HashPassword(random2.String(6))
 	require.NoError(t, err)
 	require.NotEmpty(t, hashedPassword)
 	arg := CreateUserParams{
-		Username:       random.Username(),
+		Username:       random2.Username(),
 		HashedPassword: hashedPassword,
-		FullName:       random.Username(),
-		Email:          random.UserEmail(),
+		FullName:       random2.Username(),
+		Email:          random2.UserEmail(),
 	}
 
 	user, err := testQueries.CreateUser(context.Background(), arg)

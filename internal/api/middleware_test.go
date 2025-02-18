@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
-	"simple-bank/tokens"
+	tokens2 "simple-bank/internal/tokens"
 	"testing"
 	"time"
 )
@@ -14,9 +14,9 @@ import (
 func addAuthorization(
 	t *testing.T,
 	request *http.Request,
-	tokensManager tokens.Manager,
+	tokensManager tokens2.Manager,
 	authorizationType string,
-	payloadCreationParams tokens.PayloadCreationParams,
+	payloadCreationParams tokens2.PayloadCreationParams,
 ) {
 	token, err := tokensManager.CreateToken(payloadCreationParams)
 	require.NoError(t, err)
@@ -28,13 +28,13 @@ func addAuthorization(
 func TestAuthMiddleware(t *testing.T) {
 	testCases := []struct {
 		name          string
-		setupAuth     func(t *testing.T, request *http.Request, tokenManager tokens.Manager)
+		setupAuth     func(t *testing.T, request *http.Request, tokenManager tokens2.Manager)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
 			name: "success",
-			setupAuth: func(t *testing.T, request *http.Request, tokenManager tokens.Manager) {
-				addAuthorization(t, request, tokenManager, authorizationTypeBearer, tokens.PayloadCreationParams{
+			setupAuth: func(t *testing.T, request *http.Request, tokenManager tokens2.Manager) {
+				addAuthorization(t, request, tokenManager, authorizationTypeBearer, tokens2.PayloadCreationParams{
 					Subject:   "user",
 					Audience:  "test",
 					Issuer:    "test",
@@ -48,7 +48,7 @@ func TestAuthMiddleware(t *testing.T) {
 		},
 		{
 			name: "no_authorization",
-			setupAuth: func(t *testing.T, request *http.Request, tokenManager tokens.Manager) {
+			setupAuth: func(t *testing.T, request *http.Request, tokenManager tokens2.Manager) {
 
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
@@ -57,8 +57,8 @@ func TestAuthMiddleware(t *testing.T) {
 		},
 		{
 			name: "unsupported_authorization_type",
-			setupAuth: func(t *testing.T, request *http.Request, tokenManager tokens.Manager) {
-				addAuthorization(t, request, tokenManager, "unsupported", tokens.PayloadCreationParams{
+			setupAuth: func(t *testing.T, request *http.Request, tokenManager tokens2.Manager) {
+				addAuthorization(t, request, tokenManager, "unsupported", tokens2.PayloadCreationParams{
 					Subject:   "user",
 					Audience:  "test",
 					Issuer:    "test",
@@ -72,8 +72,8 @@ func TestAuthMiddleware(t *testing.T) {
 		},
 		{
 			name: "invalid_authorization_type",
-			setupAuth: func(t *testing.T, request *http.Request, tokenManager tokens.Manager) {
-				addAuthorization(t, request, tokenManager, "", tokens.PayloadCreationParams{
+			setupAuth: func(t *testing.T, request *http.Request, tokenManager tokens2.Manager) {
+				addAuthorization(t, request, tokenManager, "", tokens2.PayloadCreationParams{
 					Subject:   "user",
 					Audience:  "test",
 					Issuer:    "test",
@@ -87,8 +87,8 @@ func TestAuthMiddleware(t *testing.T) {
 		},
 		{
 			name: "expired_token",
-			setupAuth: func(t *testing.T, request *http.Request, tokenManager tokens.Manager) {
-				addAuthorization(t, request, tokenManager, authorizationTypeBearer, tokens.PayloadCreationParams{
+			setupAuth: func(t *testing.T, request *http.Request, tokenManager tokens2.Manager) {
+				addAuthorization(t, request, tokenManager, authorizationTypeBearer, tokens2.PayloadCreationParams{
 					Subject:   "user",
 					Audience:  "test",
 					Issuer:    "test",
@@ -102,8 +102,8 @@ func TestAuthMiddleware(t *testing.T) {
 		},
 		{
 			name: "using_token_early",
-			setupAuth: func(t *testing.T, request *http.Request, tokenManager tokens.Manager) {
-				addAuthorization(t, request, tokenManager, authorizationTypeBearer, tokens.PayloadCreationParams{
+			setupAuth: func(t *testing.T, request *http.Request, tokenManager tokens2.Manager) {
+				addAuthorization(t, request, tokenManager, authorizationTypeBearer, tokens2.PayloadCreationParams{
 					Subject:   "user",
 					Audience:  "test",
 					Issuer:    "test",

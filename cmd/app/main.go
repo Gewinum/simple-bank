@@ -3,7 +3,7 @@ package main
 import (
 	"database/sql"
 	_ "github.com/lib/pq"
-	"simple-bank/api"
+	"simple-bank/internal/api"
 	"simple-bank/internal/config"
 	"simple-bank/internal/db"
 )

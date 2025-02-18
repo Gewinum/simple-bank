@@ -6,7 +6,7 @@ import (
 	"os"
 	"simple-bank/internal/config"
 	"simple-bank/internal/db"
-	"simple-bank/random"
+	"simple-bank/internal/random"
 	"testing"
 	"time"
 )

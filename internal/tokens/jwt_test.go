@@ -1,17 +1,18 @@
 package tokens
 
 import (
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/stretchr/testify/require"
-	"simple-bank/random"
+	random2 "simple-bank/internal/random"
 	"testing"
 	"time"
 )
 
-func TestPasetoManager_Success(t *testing.T) {
-	manager, err := NewPasetoManager(random.String(32))
+func TestJWTManager_Success(t *testing.T) {
+	manager, err := NewJWTManager(random2.String(32))
 	require.NoError(t, err)
 
-	username := random.Username()
+	username := random2.Username()
 	duration := time.Minute
 
 	issuedAt := time.Now()
@@ -37,10 +38,10 @@ func TestPasetoManager_Success(t *testing.T) {
 	require.WithinDuration(t, expiredAt, payload.ExpiredAt, time.Second)
 }
 
-func TestPasetoManager_ExpiredToken(t *testing.T) {
-	manager, err := NewPasetoManager(random.String(32))
+func TestJWTManager_ExpiredToken(t *testing.T) {
+	manager, err := NewJWTManager(random2.String(32))
 	require.NoError(t, err)
-	username := random.Username()
+	username := random2.Username()
 	duration := -time.Minute
 	token, err := manager.CreateToken(PayloadCreationParams{
 		Subject:   username,
@@ -52,14 +53,14 @@ func TestPasetoManager_ExpiredToken(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, token)
 	payload, err := manager.VerifyToken(token)
-	require.EqualError(t, err, ErrTokenExpired.Error())
+	require.ErrorIs(t, err, ErrTokenExpired)
 	require.Empty(t, payload)
 }
 
-func TestPasetoManager_SignatureInvalid(t *testing.T) {
-	manager, err := NewJWTManager(random.String(32))
+func TestJWTManager_SignatureInvalid(t *testing.T) {
+	manager, err := NewJWTManager(random2.String(32))
 	require.NoError(t, err)
-	username := random.Username()
+	username := random2.Username()
 	duration := time.Minute
 	token, err := manager.CreateToken(PayloadCreationParams{
 		Subject:   username,
@@ -70,17 +71,17 @@ func TestPasetoManager_SignatureInvalid(t *testing.T) {
 	})
 	require.NoError(t, err)
 	require.NotEmpty(t, token)
-	manager2, err := NewJWTManager(random.String(32))
+	manager2, err := NewJWTManager(random2.String(32))
 	require.NoError(t, err)
 	payload, err := manager2.VerifyToken(token)
-	require.EqualError(t, err, ErrTokenInvalid.Error())
+	require.ErrorIs(t, err, ErrTokenInvalid)
 	require.Empty(t, payload)
 }
 
-func TestPasetoManager_UsingTokenEarly(t *testing.T) {
-	manager, err := NewPasetoManager(random.String(32))
+func TestJWTManager_UsingTokenEarly(t *testing.T) {
+	manager, err := NewJWTManager(random2.String(32))
 	require.NoError(t, err)
-	username := random.Username()
+	username := random2.Username()
 	duration := time.Minute
 	token, err := manager.CreateToken(PayloadCreationParams{
 		Subject:   username,
@@ -94,4 +95,25 @@ func TestPasetoManager_UsingTokenEarly(t *testing.T) {
 	payload, err := manager.VerifyToken(token)
 	require.ErrorIs(t, err, ErrTokenNotValidYet)
 	require.Empty(t, payload)
+}
+
+func TestJWTManager_NoAlgorithm(t *testing.T) {
+	manager, err := NewJWTManager(random2.String(32))
+	require.NoError(t, err)
+	username := random2.Username()
+	duration := time.Minute
+	payload, err := NewPayload(PayloadCreationParams{
+		Subject:   username,
+		Audience:  "bank-service",
+		Issuer:    "test",
+		NotBefore: time.Now(),
+		Duration:  duration,
+	})
+	require.NoError(t, err)
+	jwtToken := jwt.NewWithClaims(jwt.SigningMethodNone, payload)
+	require.NotEmpty(t, jwtToken)
+	token, err := jwtToken.SignedString(jwt.UnsafeAllowNoneSignatureType)
+	payload2, err := manager.VerifyToken(token)
+	require.ErrorIs(t, err, jwt.ErrTokenUnverifiable)
+	require.Empty(t, payload2)
 }

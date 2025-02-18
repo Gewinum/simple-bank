@@ -3,7 +3,7 @@ package security
 import (
 	"fmt"
 	"github.com/stretchr/testify/require"
-	"simple-bank/random"
+	"simple-bank/internal/random"
 	"testing"
 )
 

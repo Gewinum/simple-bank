@@ -12,8 +12,8 @@ import (
 	"net/http/httptest"
 	"simple-bank/internal/db"
 	mockdb "simple-bank/internal/db/mock"
-	"simple-bank/random"
-	"simple-bank/security"
+	random2 "simple-bank/internal/random"
+	"simple-bank/internal/security"
 	"testing"
 	"time"
 )
@@ -282,15 +282,15 @@ func TestServer_loginUser(t *testing.T) {
 }
 
 func randomUser(t *testing.T) (db.User, string) {
-	password := random.String(6)
+	password := random2.String(6)
 
 	hashedPassword, err := security.HashPassword(password)
 	require.NoError(t, err)
 
 	return db.User{
-		Username:       random.String(6),
-		FullName:       random.String(6),
-		Email:          random.UserEmail(),
+		Username:       random2.String(6),
+		FullName:       random2.String(6),
+		Email:          random2.UserEmail(),
 		HashedPassword: hashedPassword,
 	}, password
 }

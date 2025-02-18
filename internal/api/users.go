@@ -8,8 +8,8 @@ import (
 	"log"
 	"net/http"
 	"simple-bank/internal/db"
-	"simple-bank/security"
-	"simple-bank/tokens"
+	"simple-bank/internal/security"
+	"simple-bank/internal/tokens"
 	"time"
 )
 

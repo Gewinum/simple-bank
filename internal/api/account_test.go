@@ -13,8 +13,8 @@ import (
 	"net/http/httptest"
 	"simple-bank/internal/db"
 	mockdb "simple-bank/internal/db/mock"
-	"simple-bank/random"
-	"simple-bank/tokens"
+	random2 "simple-bank/internal/random"
+	tokens2 "simple-bank/internal/tokens"
 	"testing"
 	"time"
 )
@@ -26,7 +26,7 @@ func TestServer_CreateAccount(t *testing.T) {
 	testCases := []struct {
 		name          string
 		body          createAccountRequest
-		setupAuth     func(t *testing.T, request *http.Request, tokensManager tokens.Manager)
+		setupAuth     func(t *testing.T, request *http.Request, tokensManager tokens2.Manager)
 		buildStubs    func(store *mockdb.MockStore)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
@@ -35,8 +35,8 @@ func TestServer_CreateAccount(t *testing.T) {
 			body: createAccountRequest{
 				Currency: account.Currency,
 			},
-			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens.Manager) {
-				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens.PayloadCreationParams{
+			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens2.Manager) {
+				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens2.PayloadCreationParams{
 					Subject:   user.Username,
 					Audience:  "test",
 					Issuer:    "test",
@@ -65,8 +65,8 @@ func TestServer_CreateAccount(t *testing.T) {
 			body: createAccountRequest{
 				Currency: "not_a_currency",
 			},
-			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens.Manager) {
-				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens.PayloadCreationParams{
+			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens2.Manager) {
+				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens2.PayloadCreationParams{
 					Subject:   user.Username,
 					Audience:  "test",
 					Issuer:    "test",
@@ -88,8 +88,8 @@ func TestServer_CreateAccount(t *testing.T) {
 			body: createAccountRequest{
 				Currency: account.Currency,
 			},
-			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens.Manager) {
-				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens.PayloadCreationParams{
+			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens2.Manager) {
+				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens2.PayloadCreationParams{
 					Subject:   user.Username,
 					Audience:  "test",
 					Issuer:    "test",
@@ -117,8 +117,8 @@ func TestServer_CreateAccount(t *testing.T) {
 			body: createAccountRequest{
 				Currency: account.Currency,
 			},
-			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens.Manager) {
-				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens.PayloadCreationParams{
+			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens2.Manager) {
+				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens2.PayloadCreationParams{
 					Subject:   user.Username,
 					Audience:  "test",
 					Issuer:    "test",
@@ -179,15 +179,15 @@ func TestServer_GetAccount(t *testing.T) {
 	testCases := []struct {
 		name          string
 		accountId     int64
-		setupAuth     func(t *testing.T, request *http.Request, tokensManager tokens.Manager)
+		setupAuth     func(t *testing.T, request *http.Request, tokensManager tokens2.Manager)
 		buildStubs    func(store *mockdb.MockStore)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
 			name:      "OK",
 			accountId: account.ID,
-			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens.Manager) {
-				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens.PayloadCreationParams{
+			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens2.Manager) {
+				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens2.PayloadCreationParams{
 					Subject:   user.Username,
 					Audience:  "test",
 					Issuer:    "test",
@@ -209,8 +209,8 @@ func TestServer_GetAccount(t *testing.T) {
 		{
 			name:      "NotFound",
 			accountId: account.ID,
-			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens.Manager) {
-				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens.PayloadCreationParams{
+			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens2.Manager) {
+				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens2.PayloadCreationParams{
 					Subject:   user.Username,
 					Audience:  "test",
 					Issuer:    "test",
@@ -231,8 +231,8 @@ func TestServer_GetAccount(t *testing.T) {
 		{
 			name:      "Internal Server Error",
 			accountId: account.ID,
-			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens.Manager) {
-				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens.PayloadCreationParams{
+			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens2.Manager) {
+				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens2.PayloadCreationParams{
 					Subject:   user.Username,
 					Audience:  "test",
 					Issuer:    "test",
@@ -253,8 +253,8 @@ func TestServer_GetAccount(t *testing.T) {
 		{
 			name:      "Bad Request",
 			accountId: 0,
-			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens.Manager) {
-				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens.PayloadCreationParams{
+			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens2.Manager) {
+				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens2.PayloadCreationParams{
 					Subject:   user.Username,
 					Audience:  "test",
 					Issuer:    "test",
@@ -274,8 +274,8 @@ func TestServer_GetAccount(t *testing.T) {
 		{
 			name:      "wrong_user",
 			accountId: account.ID,
-			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens.Manager) {
-				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens.PayloadCreationParams{
+			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens2.Manager) {
+				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens2.PayloadCreationParams{
 					Subject:   "wrong_user",
 					Audience:  "test",
 					Issuer:    "test",
@@ -330,7 +330,7 @@ func TestServer_ListAccounts(t *testing.T) {
 	testCases := []struct {
 		name          string
 		body          ListAccountParams
-		setupAuth     func(t *testing.T, request *http.Request, tokensManager tokens.Manager)
+		setupAuth     func(t *testing.T, request *http.Request, tokensManager tokens2.Manager)
 		buildStubs    func(store *mockdb.MockStore)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
@@ -340,8 +340,8 @@ func TestServer_ListAccounts(t *testing.T) {
 				PageID:   1,
 				PageSize: 10,
 			},
-			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens.Manager) {
-				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens.PayloadCreationParams{
+			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens2.Manager) {
+				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens2.PayloadCreationParams{
 					Subject:   user.Username,
 					Audience:  "test",
 					Issuer:    "test",
@@ -372,8 +372,8 @@ func TestServer_ListAccounts(t *testing.T) {
 				PageID:   1,
 				PageSize: 10,
 			},
-			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens.Manager) {
-				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens.PayloadCreationParams{
+			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens2.Manager) {
+				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens2.PayloadCreationParams{
 					Subject:   user.Username,
 					Audience:  "test",
 					Issuer:    "test",
@@ -404,8 +404,8 @@ func TestServer_ListAccounts(t *testing.T) {
 				PageID:   0,
 				PageSize: 10,
 			},
-			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens.Manager) {
-				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens.PayloadCreationParams{
+			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens2.Manager) {
+				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens2.PayloadCreationParams{
 					Subject:   user.Username,
 					Audience:  "test",
 					Issuer:    "test",
@@ -428,8 +428,8 @@ func TestServer_ListAccounts(t *testing.T) {
 				PageID:   1,
 				PageSize: 4,
 			},
-			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens.Manager) {
-				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens.PayloadCreationParams{
+			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens2.Manager) {
+				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens2.PayloadCreationParams{
 					Subject:   user.Username,
 					Audience:  "test",
 					Issuer:    "test",
@@ -452,8 +452,8 @@ func TestServer_ListAccounts(t *testing.T) {
 				PageID:   1,
 				PageSize: 11,
 			},
-			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens.Manager) {
-				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens.PayloadCreationParams{
+			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens2.Manager) {
+				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens2.PayloadCreationParams{
 					Subject:   user.Username,
 					Audience:  "test",
 					Issuer:    "test",
@@ -521,9 +521,9 @@ func requireBodyMatchAccount(t *testing.T, body *bytes.Buffer, account db.Accoun
 
 func randomAccount(owner string) db.Account {
 	return db.Account{
-		ID:       random.Int64(1, 1000),
+		ID:       random2.Int64(1, 1000),
 		Owner:    owner,
-		Balance:  random.AccountBalance(),
-		Currency: random.AccountCurrency(),
+		Balance:  random2.AccountBalance(),
+		Currency: random2.AccountCurrency(),
 	}
 }

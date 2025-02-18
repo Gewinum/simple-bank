@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"simple-bank/tokens"
+	tokens2 "simple-bank/internal/tokens"
 	"strings"
 )
 
@@ -15,11 +15,11 @@ const (
 	authorizationPayloadKey = "payload"
 )
 
-func getPayloadFromGinCtx(c *gin.Context) *tokens.Payload {
-	return c.MustGet(authorizationPayloadKey).(*tokens.Payload)
+func getPayloadFromGinCtx(c *gin.Context) *tokens2.Payload {
+	return c.MustGet(authorizationPayloadKey).(*tokens2.Payload)
 }
 
-func authMiddleware(tokensManager tokens.Manager) gin.HandlerFunc {
+func authMiddleware(tokensManager tokens2.Manager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authorizationToken := c.Request.Header.Get(authorizationHeader)
 		if authorizationToken == "" {

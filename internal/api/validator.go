@@ -2,7 +2,7 @@ package api
 
 import (
 	"github.com/go-playground/validator/v10"
-	"simple-bank/utils"
+	"simple-bank/internal/utils"
 )
 
 var validateCurrency validator.Func = func(fl validator.FieldLevel) bool {

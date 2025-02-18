@@ -10,8 +10,8 @@ import (
 	"net/http/httptest"
 	"simple-bank/internal/db"
 	mockdb "simple-bank/internal/db/mock"
-	"simple-bank/tokens"
-	"simple-bank/utils"
+	tokens2 "simple-bank/internal/tokens"
+	"simple-bank/internal/utils"
 	"testing"
 	"time"
 )
@@ -24,7 +24,7 @@ func TestServer_createTransfer(t *testing.T) {
 	testCases := []struct {
 		name          string
 		createBody    func() transferRequest
-		setupAuth     func(t *testing.T, request *http.Request, tokensManager tokens.Manager)
+		setupAuth     func(t *testing.T, request *http.Request, tokensManager tokens2.Manager)
 		buildStubs    func(store *mockdb.MockStore)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
@@ -38,8 +38,8 @@ func TestServer_createTransfer(t *testing.T) {
 					Currency:      utils.CurrencyUSD,
 				}
 			},
-			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens.Manager) {
-				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens.PayloadCreationParams{
+			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens2.Manager) {
+				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens2.PayloadCreationParams{
 					Subject:   user.Username,
 					Audience:  "test",
 					Issuer:    "test",
@@ -99,8 +99,8 @@ func TestServer_createTransfer(t *testing.T) {
 					Currency:      utils.CurrencyUSD,
 				}
 			},
-			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens.Manager) {
-				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens.PayloadCreationParams{
+			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens2.Manager) {
+				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens2.PayloadCreationParams{
 					Subject:   user.Username,
 					Audience:  "test",
 					Issuer:    "test",
@@ -136,8 +136,8 @@ func TestServer_createTransfer(t *testing.T) {
 					Currency:      utils.CurrencyUSD,
 				}
 			},
-			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens.Manager) {
-				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens.PayloadCreationParams{
+			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens2.Manager) {
+				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens2.PayloadCreationParams{
 					Subject:   user.Username,
 					Audience:  "test",
 					Issuer:    "test",
@@ -175,8 +175,8 @@ func TestServer_createTransfer(t *testing.T) {
 					Currency:      utils.CurrencyUSD,
 				}
 			},
-			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens.Manager) {
-				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens.PayloadCreationParams{
+			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens2.Manager) {
+				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens2.PayloadCreationParams{
 					Subject:   user.Username,
 					Audience:  "test",
 					Issuer:    "test",
@@ -210,8 +210,8 @@ func TestServer_createTransfer(t *testing.T) {
 					Currency:      utils.CurrencyUSD,
 				}
 			},
-			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens.Manager) {
-				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens.PayloadCreationParams{
+			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens2.Manager) {
+				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens2.PayloadCreationParams{
 					Subject:   user.Username,
 					Audience:  "test",
 					Issuer:    "test",
@@ -247,8 +247,8 @@ func TestServer_createTransfer(t *testing.T) {
 					Currency:    utils.CurrencyUSD,
 				}
 			},
-			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens.Manager) {
-				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens.PayloadCreationParams{
+			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens2.Manager) {
+				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens2.PayloadCreationParams{
 					Subject:   user.Username,
 					Audience:  "test",
 					Issuer:    "test",
@@ -274,8 +274,8 @@ func TestServer_createTransfer(t *testing.T) {
 					Currency:    utils.CurrencyUSD,
 				}
 			},
-			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens.Manager) {
-				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens.PayloadCreationParams{
+			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens2.Manager) {
+				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens2.PayloadCreationParams{
 					Subject:   user.Username,
 					Audience:  "test",
 					Issuer:    "test",
@@ -302,8 +302,8 @@ func TestServer_createTransfer(t *testing.T) {
 					Currency:      utils.CurrencyUSD,
 				}
 			},
-			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens.Manager) {
-				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens.PayloadCreationParams{
+			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens2.Manager) {
+				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens2.PayloadCreationParams{
 					Subject:   user.Username,
 					Audience:  "test",
 					Issuer:    "test",
@@ -330,8 +330,8 @@ func TestServer_createTransfer(t *testing.T) {
 					Currency:      "some",
 				}
 			},
-			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens.Manager) {
-				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens.PayloadCreationParams{
+			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens2.Manager) {
+				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens2.PayloadCreationParams{
 					Subject:   user.Username,
 					Audience:  "test",
 					Issuer:    "test",
@@ -358,8 +358,8 @@ func TestServer_createTransfer(t *testing.T) {
 					Currency:      utils.CurrencyUSD,
 				}
 			},
-			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens.Manager) {
-				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens.PayloadCreationParams{
+			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens2.Manager) {
+				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens2.PayloadCreationParams{
 					Subject:   "invalid_user",
 					Audience:  "test",
 					Issuer:    "test",
@@ -370,7 +370,7 @@ func TestServer_createTransfer(t *testing.T) {
 			buildStubs: func(store *mockdb.MockStore) {
 				account1.Currency = utils.CurrencyUSD
 				account2.Currency = utils.CurrencyUSD
-				
+
 				store.EXPECT().
 					GetAccount(gomock.Any(), gomock.Eq(account1.ID)).
 					Times(1).
