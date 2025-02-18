@@ -11,7 +11,6 @@ import (
 )
 
 type createAccountRequest struct {
-	Owner    string `json:"owner" binding:"required"`
 	Currency string `json:"currency" binding:"required,currency"`
 }
 
@@ -22,8 +21,10 @@ func (s *Server) createAccount(c *gin.Context) {
 		return
 	}
 
+	authPayload := getPayloadFromGinCtx(c)
+
 	arg := db.CreateAccountParams{
-		Owner:    request.Owner,
+		Owner:    authPayload.Subject,
 		Balance:  0,
 		Currency: request.Currency,
 	}
@@ -67,6 +68,13 @@ func (s *Server) getAccount(c *gin.Context) {
 		return
 	}
 
+	authPayload := getPayloadFromGinCtx(c)
+
+	if authPayload.Subject != account.Owner {
+		c.JSON(http.StatusForbidden, errorResponse(errors.New("you do not own this account")))
+		return
+	}
+
 	c.JSON(http.StatusOK, account)
 }
 
@@ -82,7 +90,10 @@ func (s *Server) listAccounts(c *gin.Context) {
 		return
 	}
 
+	authPayload := getPayloadFromGinCtx(c)
+
 	arg := db.ListAccountsParams{
+		Owner:  authPayload.Subject,
 		Limit:  request.PageSize,
 		Offset: (request.PageID - 1) * request.PageSize,
 	}

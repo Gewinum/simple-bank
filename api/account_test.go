@@ -14,23 +14,35 @@ import (
 	"simple-bank/internal/db"
 	mockdb "simple-bank/internal/db/mock"
 	"simple-bank/random"
+	"simple-bank/tokens"
 	"testing"
+	"time"
 )
 
 func TestServer_CreateAccount(t *testing.T) {
-	account := randomAccount()
+	user, _ := randomUser(t)
+	account := randomAccount(user.Username)
 
 	testCases := []struct {
 		name          string
 		body          createAccountRequest
+		setupAuth     func(t *testing.T, request *http.Request, tokensManager tokens.Manager)
 		buildStubs    func(store *mockdb.MockStore)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
 			name: "success",
 			body: createAccountRequest{
-				Owner:    account.Owner,
 				Currency: account.Currency,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens.Manager) {
+				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens.PayloadCreationParams{
+					Subject:   user.Username,
+					Audience:  "test",
+					Issuer:    "test",
+					NotBefore: time.Now(),
+					Duration:  time.Minute,
+				})
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				dbRequest := db.CreateAccountParams{
@@ -51,8 +63,16 @@ func TestServer_CreateAccount(t *testing.T) {
 		{
 			name: "invalid_currency",
 			body: createAccountRequest{
-				Owner:    account.Owner,
 				Currency: "not_a_currency",
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens.Manager) {
+				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens.PayloadCreationParams{
+					Subject:   user.Username,
+					Audience:  "test",
+					Issuer:    "test",
+					NotBefore: time.Now(),
+					Duration:  time.Minute,
+				})
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
@@ -66,8 +86,16 @@ func TestServer_CreateAccount(t *testing.T) {
 		{
 			name: "unexistent_user",
 			body: createAccountRequest{
-				Owner:    account.Owner,
 				Currency: account.Currency,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens.Manager) {
+				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens.PayloadCreationParams{
+					Subject:   user.Username,
+					Audience:  "test",
+					Issuer:    "test",
+					NotBefore: time.Now(),
+					Duration:  time.Minute,
+				})
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				dbRequest := db.CreateAccountParams{
@@ -87,8 +115,16 @@ func TestServer_CreateAccount(t *testing.T) {
 		{
 			name: "duplicate_user_and_currency",
 			body: createAccountRequest{
-				Owner:    account.Owner,
 				Currency: account.Currency,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens.Manager) {
+				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens.PayloadCreationParams{
+					Subject:   user.Username,
+					Audience:  "test",
+					Issuer:    "test",
+					NotBefore: time.Now(),
+					Duration:  time.Minute,
+				})
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				dbRequest := db.CreateAccountParams{
@@ -122,10 +158,12 @@ func TestServer_CreateAccount(t *testing.T) {
 			bodyBytes, err := json.Marshal(body)
 			require.NoError(t, err)
 			bodyReader := bytes.NewReader(bodyBytes)
+
 			url := "/accounts"
 			request, err := http.NewRequest(http.MethodPost, url, bodyReader)
-
 			require.NoError(t, err)
+
+			tc.setupAuth(t, request, server.tokensManager)
 
 			server.engine.ServeHTTP(recorder, request)
 
@@ -135,17 +173,28 @@ func TestServer_CreateAccount(t *testing.T) {
 }
 
 func TestServer_GetAccount(t *testing.T) {
-	account := randomAccount()
+	user, _ := randomUser(t)
+	account := randomAccount(user.Username)
 
 	testCases := []struct {
 		name          string
 		accountId     int64
+		setupAuth     func(t *testing.T, request *http.Request, tokensManager tokens.Manager)
 		buildStubs    func(store *mockdb.MockStore)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
 			name:      "OK",
 			accountId: account.ID,
+			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens.Manager) {
+				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens.PayloadCreationParams{
+					Subject:   user.Username,
+					Audience:  "test",
+					Issuer:    "test",
+					NotBefore: time.Now(),
+					Duration:  time.Minute,
+				})
+			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
 					GetAccount(gomock.Any(), gomock.Eq(account.ID)).
@@ -160,6 +209,15 @@ func TestServer_GetAccount(t *testing.T) {
 		{
 			name:      "NotFound",
 			accountId: account.ID,
+			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens.Manager) {
+				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens.PayloadCreationParams{
+					Subject:   user.Username,
+					Audience:  "test",
+					Issuer:    "test",
+					NotBefore: time.Now(),
+					Duration:  time.Minute,
+				})
+			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
 					GetAccount(gomock.Any(), gomock.Eq(account.ID)).
@@ -173,6 +231,15 @@ func TestServer_GetAccount(t *testing.T) {
 		{
 			name:      "Internal Server Error",
 			accountId: account.ID,
+			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens.Manager) {
+				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens.PayloadCreationParams{
+					Subject:   user.Username,
+					Audience:  "test",
+					Issuer:    "test",
+					NotBefore: time.Now(),
+					Duration:  time.Minute,
+				})
+			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
 					GetAccount(gomock.Any(), gomock.Eq(account.ID)).
@@ -186,6 +253,15 @@ func TestServer_GetAccount(t *testing.T) {
 		{
 			name:      "Bad Request",
 			accountId: 0,
+			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens.Manager) {
+				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens.PayloadCreationParams{
+					Subject:   user.Username,
+					Audience:  "test",
+					Issuer:    "test",
+					NotBefore: time.Now(),
+					Duration:  time.Minute,
+				})
+			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
 					GetAccount(gomock.Any(), gomock.Any()).
@@ -193,6 +269,28 @@ func TestServer_GetAccount(t *testing.T) {
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name:      "wrong_user",
+			accountId: account.ID,
+			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens.Manager) {
+				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens.PayloadCreationParams{
+					Subject:   "wrong_user",
+					Audience:  "test",
+					Issuer:    "test",
+					NotBefore: time.Now(),
+					Duration:  time.Minute,
+				})
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					GetAccount(gomock.Any(), gomock.Eq(account.ID)).
+					Times(1).
+					Return(account, nil)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusForbidden, recorder.Code)
 			},
 		},
 	}
@@ -210,8 +308,9 @@ func TestServer_GetAccount(t *testing.T) {
 
 			url := fmt.Sprintf("/accounts/%d", tc.accountId)
 			request, err := http.NewRequest(http.MethodGet, url, nil)
-
 			require.NoError(t, err)
+
+			tc.setupAuth(t, request, server.tokensManager)
 
 			server.engine.ServeHTTP(recorder, request)
 
@@ -221,15 +320,17 @@ func TestServer_GetAccount(t *testing.T) {
 }
 
 func TestServer_ListAccounts(t *testing.T) {
+	user, _ := randomUser(t)
 	n := 10
 	accounts := make([]db.Account, n)
 	for i := 0; i < n; i++ {
-		accounts[i] = randomAccount()
+		accounts[i] = randomAccount(user.Username)
 	}
 
 	testCases := []struct {
 		name          string
 		body          ListAccountParams
+		setupAuth     func(t *testing.T, request *http.Request, tokensManager tokens.Manager)
 		buildStubs    func(store *mockdb.MockStore)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
@@ -239,8 +340,18 @@ func TestServer_ListAccounts(t *testing.T) {
 				PageID:   1,
 				PageSize: 10,
 			},
+			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens.Manager) {
+				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens.PayloadCreationParams{
+					Subject:   user.Username,
+					Audience:  "test",
+					Issuer:    "test",
+					NotBefore: time.Now(),
+					Duration:  time.Minute,
+				})
+			},
 			buildStubs: func(store *mockdb.MockStore) {
 				dbRequest := db.ListAccountsParams{
+					Owner:  user.Username,
 					Limit:  10,
 					Offset: 0,
 				}
@@ -261,8 +372,18 @@ func TestServer_ListAccounts(t *testing.T) {
 				PageID:   1,
 				PageSize: 10,
 			},
+			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens.Manager) {
+				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens.PayloadCreationParams{
+					Subject:   user.Username,
+					Audience:  "test",
+					Issuer:    "test",
+					NotBefore: time.Now(),
+					Duration:  time.Minute,
+				})
+			},
 			buildStubs: func(store *mockdb.MockStore) {
 				dbRequest := db.ListAccountsParams{
+					Owner:  user.Username,
 					Limit:  10,
 					Offset: 0,
 				}
@@ -283,6 +404,15 @@ func TestServer_ListAccounts(t *testing.T) {
 				PageID:   0,
 				PageSize: 10,
 			},
+			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens.Manager) {
+				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens.PayloadCreationParams{
+					Subject:   user.Username,
+					Audience:  "test",
+					Issuer:    "test",
+					NotBefore: time.Now(),
+					Duration:  time.Minute,
+				})
+			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
 					ListAccounts(gomock.Any(), gomock.Any()).
@@ -298,6 +428,15 @@ func TestServer_ListAccounts(t *testing.T) {
 				PageID:   1,
 				PageSize: 4,
 			},
+			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens.Manager) {
+				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens.PayloadCreationParams{
+					Subject:   user.Username,
+					Audience:  "test",
+					Issuer:    "test",
+					NotBefore: time.Now(),
+					Duration:  time.Minute,
+				})
+			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
 					ListAccounts(gomock.Any(), gomock.Any()).
@@ -312,6 +451,15 @@ func TestServer_ListAccounts(t *testing.T) {
 			body: ListAccountParams{
 				PageID:   1,
 				PageSize: 11,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokensManager tokens.Manager) {
+				addAuthorization(t, request, tokensManager, authorizationTypeBearer, tokens.PayloadCreationParams{
+					Subject:   user.Username,
+					Audience:  "test",
+					Issuer:    "test",
+					NotBefore: time.Now(),
+					Duration:  time.Minute,
+				})
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
@@ -337,8 +485,9 @@ func TestServer_ListAccounts(t *testing.T) {
 
 			url := fmt.Sprintf("/accounts?page_id=%d&page_size=%d", tc.body.PageID, tc.body.PageSize)
 			request, err := http.NewRequest(http.MethodGet, url, nil)
-
 			require.NoError(t, err)
+
+			tc.setupAuth(t, request, server.tokensManager)
 
 			server.engine.ServeHTTP(recorder, request)
 
@@ -370,10 +519,10 @@ func requireBodyMatchAccount(t *testing.T, body *bytes.Buffer, account db.Accoun
 	require.Equal(t, account, gotAccount)
 }
 
-func randomAccount() db.Account {
+func randomAccount(owner string) db.Account {
 	return db.Account{
 		ID:       random.Int64(1, 1000),
-		Owner:    random.Username(),
+		Owner:    owner,
 		Balance:  random.AccountBalance(),
 		Currency: random.AccountCurrency(),
 	}

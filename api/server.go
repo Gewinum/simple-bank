@@ -38,11 +38,13 @@ func NewServer(config *config.Config, store db.Store) (*Server, error) {
 	server.engine.POST("/users", server.createUser)
 	server.engine.POST("/users/login", server.loginUser)
 
-	server.engine.POST("/accounts", server.createAccount)
-	server.engine.GET("/accounts/:id", server.getAccount)
-	server.engine.GET("/accounts", server.listAccounts)
+	authRoutes := server.engine.Group("/").Use(authMiddleware(server.tokensManager))
 
-	server.engine.POST("/transfers", server.createTransfer)
+	authRoutes.POST("/accounts", server.createAccount)
+	authRoutes.GET("/accounts/:id", server.getAccount)
+	authRoutes.GET("/accounts", server.listAccounts)
+
+	authRoutes.POST("/transfers", server.createTransfer)
 
 	return server, nil
 }

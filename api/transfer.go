@@ -23,13 +23,19 @@ func (s *Server) createTransfer(c *gin.Context) {
 		return
 	}
 
-	if !s.validateAccount(c, request.FromAccountID, request.Currency) {
-		c.JSON(http.StatusBadRequest, errorResponse(errors.New("source account's currency does not match transaction's")))
+	fromAccount, valid := s.validateAccount(c, request.FromAccountID, request.Currency)
+	if !valid {
 		return
 	}
 
-	if !s.validateAccount(c, request.ToAccountID, request.Currency) {
-		c.JSON(http.StatusBadRequest, errorResponse(errors.New("destination account's currency does not match transaction's")))
+	authPayload := getPayloadFromGinCtx(c)
+	if authPayload.Subject != fromAccount.Owner {
+		c.JSON(http.StatusForbidden, errorResponse(fmt.Errorf("you do not own account %d", request.FromAccountID)))
+		return
+	}
+
+	_, valid = s.validateAccount(c, request.ToAccountID, request.Currency)
+	if !valid {
 		return
 	}
 
@@ -48,21 +54,21 @@ func (s *Server) createTransfer(c *gin.Context) {
 	c.JSON(http.StatusOK, txResult)
 }
 
-func (s *Server) validateAccount(c *gin.Context, accountId int64, currency string) bool {
+func (s *Server) validateAccount(c *gin.Context, accountId int64, currency string) (db.Account, bool) {
 	account, err := s.store.GetAccount(c, accountId)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			c.JSON(http.StatusNotFound, errorResponse(err))
-			return false
+			return account, false
 		}
 		c.JSON(http.StatusInternalServerError, errorResponse(err))
-		return false
+		return account, false
 	}
 
 	if account.Currency != currency {
 		c.JSON(http.StatusBadRequest, errorResponse(fmt.Errorf("account [%d] currency mismatched. expected: %s, actual: %s", accountId, currency, account.Currency)))
-		return false
+		return account, false
 	}
 
-	return true
+	return account, true
 }

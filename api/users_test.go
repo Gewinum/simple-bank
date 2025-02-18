@@ -253,7 +253,7 @@ func TestServer_loginUser(t *testing.T) {
 				store.EXPECT().
 					GetUser(gomock.Any(), gomock.Eq(user.Username)).
 					Times(1).
-					Return(db.User{}, errors.New("Internal Server Error"))
+					Return(db.User{}, errors.New("internal server error"))
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder, server *Server) {
 				require.Equal(t, http.StatusInternalServerError, recorder.Code)
