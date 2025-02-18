@@ -393,7 +393,7 @@ func TestServer_createTransfer(t *testing.T) {
 			store := mockdb.NewMockStore(ctrl)
 			tc.buildStubs(store)
 
-			server := newTestServer(t, store)
+			testContainer := newTestContainer(t, store)
 			recorder := httptest.NewRecorder()
 
 			trReq := tc.createBody()
@@ -405,11 +405,11 @@ func TestServer_createTransfer(t *testing.T) {
 			request, err := http.NewRequest(http.MethodPost, "/transfers", byteBuffer)
 			require.NoError(t, err)
 
-			tc.setupAuth(t, request, server.tokensManager)
-
-			server.engine.ServeHTTP(recorder, request)
-
-			tc.checkResponse(t, recorder)
+			require.NoError(t, testContainer.Invoke(func(tokensManager tokens2.Manager, server *Server) {
+				tc.setupAuth(t, request, tokensManager)
+				server.engine.ServeHTTP(recorder, request)
+				tc.checkResponse(t, recorder)
+			}))
 		})
 	}
 }

@@ -158,7 +158,7 @@ func TestServer_createUser(t *testing.T) {
 
 			store := mockdb.NewMockStore(ctrl)
 			tc.buildStubs(store)
-			server := newTestServer(t, store)
+			testContainer := newTestContainer(t, store)
 			recorder := httptest.NewRecorder()
 
 			trReq := tc.createBody()
@@ -170,9 +170,10 @@ func TestServer_createUser(t *testing.T) {
 			request, err := http.NewRequest(http.MethodPost, "/users", byteBuffer)
 			require.NoError(t, err)
 
-			server.engine.ServeHTTP(recorder, request)
-
-			tc.checkResponse(t, recorder)
+			require.NoError(t, testContainer.Invoke(func(server *Server) {
+				server.engine.ServeHTTP(recorder, request)
+				tc.checkResponse(t, recorder)
+			}))
 		})
 	}
 }
@@ -267,16 +268,17 @@ func TestServer_loginUser(t *testing.T) {
 			defer ctrl.Finish()
 			store := mockdb.NewMockStore(ctrl)
 			tc.buildStubs(store)
-			server := newTestServer(t, store)
+			testContainer := newTestContainer(t, store)
 			recorder := httptest.NewRecorder()
 			trReq := tc.body
 			rawBody, err := json.Marshal(trReq)
 			require.NoError(t, err)
 			request, err := http.NewRequest(http.MethodPost, "/users/login", bytes.NewReader(rawBody))
 			require.NoError(t, err)
-			server.engine.ServeHTTP(recorder, request)
-			tc.checkResponse(t, recorder, server)
-
+			require.NoError(t, testContainer.Invoke(func(server *Server) {
+				server.engine.ServeHTTP(recorder, request)
+				tc.checkResponse(t, recorder, server)
+			}))
 		})
 	}
 }

@@ -119,24 +119,26 @@ func TestAuthMiddleware(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			server := newTestServer(t, nil)
+			testContainer := newTestContainer(t, nil)
 
-			authPath := "/auth"
-			server.engine.GET(
-				authPath,
-				authMiddleware(server.tokensManager),
-				func(c *gin.Context) {
-					c.JSON(http.StatusOK, gin.H{})
-				},
-			)
+			require.NoError(t, testContainer.Invoke(func(server *Server) {
+				authPath := "/auth"
+				server.engine.GET(
+					authPath,
+					authMiddleware(server.tokensManager),
+					func(c *gin.Context) {
+						c.JSON(http.StatusOK, gin.H{})
+					},
+				)
 
-			recorder := httptest.NewRecorder()
-			request, err := http.NewRequest(http.MethodGet, authPath, nil)
-			require.NoError(t, err)
+				recorder := httptest.NewRecorder()
+				request, err := http.NewRequest(http.MethodGet, authPath, nil)
+				require.NoError(t, err)
 
-			tc.setupAuth(t, request, server.tokensManager)
-			server.engine.ServeHTTP(recorder, request)
-			tc.checkResponse(t, recorder)
+				tc.setupAuth(t, request, server.tokensManager)
+				server.engine.ServeHTTP(recorder, request)
+				tc.checkResponse(t, recorder)
+			}))
 		})
 	}
 }

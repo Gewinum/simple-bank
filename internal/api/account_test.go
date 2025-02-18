@@ -151,7 +151,8 @@ func TestServer_CreateAccount(t *testing.T) {
 			store := mockdb.NewMockStore(ctrl)
 			tc.buildStubs(store)
 
-			server := newTestServer(t, store)
+			testContainer := newTestContainer(t, store)
+
 			recorder := httptest.NewRecorder()
 
 			body := tc.body
@@ -163,11 +164,11 @@ func TestServer_CreateAccount(t *testing.T) {
 			request, err := http.NewRequest(http.MethodPost, url, bodyReader)
 			require.NoError(t, err)
 
-			tc.setupAuth(t, request, server.tokensManager)
-
-			server.engine.ServeHTTP(recorder, request)
-
-			tc.checkResponse(t, recorder)
+			require.NoError(t, testContainer.Invoke(func(tokensManager tokens2.Manager, server *Server) {
+				tc.setupAuth(t, request, tokensManager)
+				server.engine.ServeHTTP(recorder, request)
+				tc.checkResponse(t, recorder)
+			}))
 		})
 	}
 }
@@ -303,18 +304,18 @@ func TestServer_GetAccount(t *testing.T) {
 			store := mockdb.NewMockStore(ctrl)
 			tc.buildStubs(store)
 
-			server := newTestServer(t, store)
+			testContainer := newTestContainer(t, store)
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/accounts/%d", tc.accountId)
 			request, err := http.NewRequest(http.MethodGet, url, nil)
 			require.NoError(t, err)
 
-			tc.setupAuth(t, request, server.tokensManager)
-
-			server.engine.ServeHTTP(recorder, request)
-
-			tc.checkResponse(t, recorder)
+			require.NoError(t, testContainer.Invoke(func(tokensManager tokens2.Manager, server *Server) {
+				tc.setupAuth(t, request, tokensManager)
+				server.engine.ServeHTTP(recorder, request)
+				tc.checkResponse(t, recorder)
+			}))
 		})
 	}
 }
@@ -480,18 +481,18 @@ func TestServer_ListAccounts(t *testing.T) {
 			store := mockdb.NewMockStore(ctrl)
 			tc.buildStubs(store)
 
-			server := newTestServer(t, store)
+			testContainer := newTestContainer(t, store)
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/accounts?page_id=%d&page_size=%d", tc.body.PageID, tc.body.PageSize)
 			request, err := http.NewRequest(http.MethodGet, url, nil)
 			require.NoError(t, err)
 
-			tc.setupAuth(t, request, server.tokensManager)
-
-			server.engine.ServeHTTP(recorder, request)
-
-			tc.checkResponse(t, recorder)
+			require.NoError(t, testContainer.Invoke(func(tokensManager tokens2.Manager, server *Server) {
+				tc.setupAuth(t, request, tokensManager)
+				server.engine.ServeHTTP(recorder, request)
+				tc.checkResponse(t, recorder)
+			}))
 		})
 	}
 }
