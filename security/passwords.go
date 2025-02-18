@@ -5,6 +5,10 @@ import (
 	"github.com/alexedwards/argon2id"
 )
 
+var (
+	ErrPasswordNotMatched = errors.New("password does not match")
+)
+
 func HashPassword(password string) (string, error) {
 	return argon2id.CreateHash(password, argon2id.DefaultParams)
 }
@@ -15,7 +19,7 @@ func ComparePasswordAndHash(password, hash string) error {
 		return err
 	}
 	if !matches {
-		return errors.New("password does not match")
+		return ErrPasswordNotMatched
 	}
 	return nil
 }
