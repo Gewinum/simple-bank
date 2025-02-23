@@ -19,9 +19,12 @@ func Load(path string) (*Config, error) {
 	viper.SetConfigType("env")
 
 	viper.AutomaticEnv()
-	if err := viper.ReadInConfig(); err != nil {
-		return nil, err
-	}
+	_ = viper.BindEnv("DB_DRIVER")
+	_ = viper.BindEnv("DB_SOURCE")
+	_ = viper.BindEnv("SERVER_ADDRESS")
+	_ = viper.BindEnv("TOKEN_PRIVATE_KEY")
+	_ = viper.BindEnv("ACCESS_TOKEN_DURATION")
+	_ = viper.ReadInConfig()
 
 	var config Config
 	if err := viper.Unmarshal(&config); err != nil {
