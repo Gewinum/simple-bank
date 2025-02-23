@@ -20,3 +20,8 @@ services:
             postgres:
                 condition: service_healthy
         environment:
+            DB_DRIVER: ${DB_DRIVER:-postgres}
+            DB_SOURCE: ${DB_SOURCE:-postgresql://root:root@postgres:5432/simplebank?sslmode=disable}
+            SERVER_ADDRESS: 0.0.0.0:8080
+            TOKEN_PRIVATE_KEY: ${TOKEN_PRIVATE_KEY:-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+            ACCESS_TOKEN_DURATION: ${ACCESS_TOKEN_DURATION:-15m}
