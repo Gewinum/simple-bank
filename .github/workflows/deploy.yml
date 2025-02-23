@@ -3,6 +3,9 @@
 
 name: Deploy to production
 
+permissions:
+    id-token: write
+
 on:
     push:
         branches: [ "main" ]
