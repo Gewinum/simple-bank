@@ -27,9 +27,11 @@ RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
 
 COPY --from=builder /app/app /app
 COPY --from=builder /app/migrate /migrate
+COPY app.env .
 
 COPY db/migration ./migration
 COPY scripts/start.sh ./start.sh
+
 # Expose port 80 to the outside world
 EXPOSE 80
 
